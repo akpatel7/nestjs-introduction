@@ -27,9 +27,9 @@ export class ProductsService {
     }));
   }
 
-  getSingleProduct(productId: string) {
-    const product = this.findProduct(productId)[0];
-    return { ...product };
+  async getSingleProduct(productId: string): Promise<Product> {
+    const product = await this.findProduct(productId);
+    return product;
   }
 
   updateProduct(productId: string, title: string, desc: string, price: number) {
@@ -52,12 +52,18 @@ export class ProductsService {
     this.products.splice(index, 1);
   }
 
-  private findProduct(id: string): [Product, number] {
-    const productIndex = this.products.findIndex(prod => prod.id === id);
-    const product = this.products[productIndex];
-    if (!product) {
+  private async findProduct(id: string): Promise<Product> {
+    let product;
+    try {
+      product = await this.productModel.findById(id);
+    } catch (error) {
       throw new NotFoundException('Could not find product.');
     }
-    return [product, productIndex];
+    return {
+      id: product.id,
+      title: product.title,
+      description: product.description,
+      price: product.price,
+    };
   }
 }
