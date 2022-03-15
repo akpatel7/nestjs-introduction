@@ -19,7 +19,12 @@ export class ProductsService {
 
   async getProducts() {
     const products = await this.productModel.find().exec(); //exec gives a real Promise
-    return [...products];
+    return products.map(product => ({
+      id: product.id,
+      title: product.title,
+      description: product.description,
+      price: product.price,
+    }));
   }
 
   getSingleProduct(productId: string) {
