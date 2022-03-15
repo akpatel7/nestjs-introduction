@@ -30,7 +30,7 @@ export class ProductsService {
   async getSingleProduct(productId: string): Promise<Product> {
     const product = await this.findProduct(productId);
     return {
-      id: product._id,
+      id: product.id,
       title: product.title,
       description: product.description,
       price: product.price,
@@ -56,9 +56,11 @@ export class ProductsService {
     updatedProduct.save();
   }
 
-  deleteProduct(prodId: string) {
-    const index = this.findProduct(prodId)[1];
-    this.products.splice(index, 1);
+  async deleteProduct(prodId: string) {
+    const result = await this.productModel.deleteOne({ _id: prodId }).exec();
+    if (result.n === 0) {
+      throw new NotFoundException('Could not find product.');
+    }
   }
 
   private async findProduct(id: string): Promise<Product> {
@@ -66,6 +68,9 @@ export class ProductsService {
     try {
       product = await this.productModel.findById(id);
     } catch (error) {
+      throw new NotFoundException('Could not find product.');
+    }
+    if (!product) {
       throw new NotFoundException('Could not find product.');
     }
     return product;
